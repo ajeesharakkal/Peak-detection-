@@ -1,0 +1,216 @@
+
+#include "PulseCalculation.h"
+
+/*
+int PluseCalulationInDcWander(long Sample)
+{
+PluseDetector.Delta=50;
+ SignedSampleSend(Sample);
+ UartDataTransmission("\r\n",3);
+int  Rate; 
+PulseSataus(Sample);
+if((PluseDetector.State== PULSE_FALL)&&(PluseDetector.Prev_State ==PULSE_VALID_MAX ))
+{
+  SignedSampleSend(Sample); 
+   
+  Rate=1;
+}
+if((PluseDetector.State== PULSE_RISE)&&(PluseDetector.Prev_State ==PULSE_VALID_MIN ))
+{
+  Rate=2;
+}
+PluseDetector.Prev_State=PluseDetector.State;
+
+}
+
+static int PulseSataus(long Sample)
+{
+
+int Pulse_Satatus;
+
+switch(PluseDetector.State)
+{
+case PULSE_RISE:
+    if(Sample < PluseDetector.peak)
+    {
+        PluseDetector.State=PULSE_VALID_MAX ;
+    }
+    break;
+   case PULSE_VALID_MAX:    //Validate the Maxima
+    if(Sample > PluseDetector.peak)
+    {
+        PluseDetector.State = PULSE_RISE  ;
+    }
+    else if((PluseDetector.peak - Sample )>PluseDetector.Delta)
+    {
+     PluseDetector.State=PULSE_FALL;
+    }
+    break ; 
+  
+   case PULSE_FALL:
+     if(Sample >PluseDetector.peak)
+     {
+       PluseDetector.State=PULSE_VALID_MIN;
+     }
+    break;
+    
+   case PULSE_VALID_MIN:  
+     if(Sample <PluseDetector.peak)
+     {
+        PluseDetector.State=PULSE_FALL;
+     }
+     else if ((Sample - PluseDetector.peak)>PluseDetector.Delta)
+     {
+       PluseDetector.State = PULSE_RISE;
+     }
+     break;
+   default :
+     PluseDetector.State=PULSE_RISE;
+    break;
+  }
+switch(PluseDetector.State)
+{
+   case PULSE_RISE:
+     PluseDetector.peak=Sample;
+    break;
+   case PULSE_FALL:
+    PluseDetector.peak=Sample;
+    break; 
+    default :
+    break;   
+}
+return  PluseDetector.State;
+
+}
+
+// calculate State.
+// validate State.  
+
+// if sate is valid cout and validate and send 
+
+*/
+//______________________________________________________Testing____________________________________________________
+
+
+
+
+int PluseCalulationInDcWander(long Sample)
+{
+ 
+int  Rate, RateTemp; 
+static int PulsePerid=0,Count,PreRate,PreCount;
+PulsePerid++;
+
+ PulseStatus(Sample);
+// SignedSampleSend(Sample);
+// UartDataTransmission("\r\n",3);
+ 
+if((PluseDetector.State== PULSE_FALL)&&(PluseDetector.Prev_State ==PULSE_VALID_MAX ))
+{   
+ 
+   if((PulsePerid - PreCount)>20)
+   {  
+      PreCount=PulsePerid;
+      Count++;
+   }
+    
+    if(Count>=3)
+    {  
+     // SignedSampleSend(20000);
+      // 70 need to add in maro delta
+      {
+       Rate=(18000/PulsePerid);
+       
+      } 
+       PulsePerid=0;
+       Count=0;
+       PreCount=0;
+       RateTemp=Rate;
+       if(RateTemp!=0)
+       {
+           Rate=RateTemp-(RateTemp/10);
+       } 
+        if(PreRate==0)
+       {
+         PreRate=Rate;
+       }
+       PreRate=(Rate+PreRate)>>1;
+   }
+  
+
+   
+  
+}
+if((PluseDetector.State== PULSE_RISE)&&(PluseDetector.Prev_State ==PULSE_VALID_MIN ))
+{
+ 
+  // TBM when the peak goes low .
+}
+PluseDetector.Prev_State=PluseDetector.State;
+
+
+return PreRate;
+}
+
+static int PulseStatus(long Sample)
+{
+
+int Pulse_Satatus;
+
+switch(PluseDetector.State)
+{
+    case PULSE_RISE:
+    if(Sample < PluseDetector.peak)
+    {
+        PluseDetector.State=PULSE_VALID_MAX ;
+    }
+    break;
+    case PULSE_VALID_MAX:    //Validate the Maxima
+    if(Sample > PluseDetector.peak)
+    {
+        PluseDetector.State = PULSE_RISE  ;
+    }
+    else if((PluseDetector.peak - Sample )>PluseDetector.Delta)
+    {
+     PluseDetector.State=PULSE_FALL;
+    }
+    break ; 
+  
+    case PULSE_FALL:
+    if(Sample >PluseDetector.peak)
+    {
+      PluseDetector.State=PULSE_VALID_MIN;
+    }
+    break;
+    
+   case PULSE_VALID_MIN:  
+     if(Sample <PluseDetector.peak)
+     {
+        PluseDetector.State=PULSE_FALL;
+     }
+     else if ((Sample - PluseDetector.peak)>PluseDetector.Delta)
+     {
+       PluseDetector.State = PULSE_RISE;
+     }
+     break;
+   default :
+     PluseDetector.State=PULSE_RISE;
+    break;
+  }
+  
+switch(PluseDetector.State)
+{
+   case PULSE_RISE:
+     PluseDetector.peak=Sample;
+    break;
+   case PULSE_FALL:
+    PluseDetector.peak=Sample;
+    break; 
+   default :
+    break;   
+}
+return  PluseDetector.State;
+
+}
+
+
